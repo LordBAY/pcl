@@ -155,9 +155,13 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
   Eigen::Vector3f eigVal = pca.getEigenValues();
   Eigen::Matrix3f eigVec = pca.getEigenVectors();
   // Make sure 3 vectors are normal w.r.t. each other
-  eigVec.col(2) = eigVec.col(0); // Z
-  Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
-  eigVec.col(0) = v3;
+  //  eigVec.col(2) = eigVec.col(0); // Z
+  //Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
+  //eigVec.col(0) = v3; 
+  
+  Eigen::Vector3f v3 = (eigVec.col(0)).cross( eigVec.col(1) );
+  eigVec.col(2) = v3;
+
   Eigen::Vector3f rpy = eigVec.eulerAngles(2,1,0);
  
   _rot[0] = (double)rpy(2);
@@ -185,9 +189,17 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
     ///////////////////////////////////////////////////////////
     std::cout << "\t [DEBUG] Bounding Box "<< std::endl;
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Debug Bounding Box") );
-    viewer->addCoordinateSystem(1.0, 0);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> col(cloud_i, 125,125,0);
+    viewer->addCoordinateSystem(_dim[2], 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> col(cloud_temp, 125,125,0);
     viewer->addPointCloud( cloud_temp, col, "Normalized cloud" );
+
+    viewer->addCube( Eigen::Vector3f(0,0,0),
+		     Eigen::Quaternionf(1,0,0,0),
+		     _dim[0]*2, _dim[1]*2, _dim[2]*2, 
+		     "OBB");
+
+    std::cout << "* Dimensions: "<< _dim[0]<<", "<<_dim[1]<<", "<<_dim[2]<<std::endl;
+    std::cout << "* Rot, trans: "<< _rot[0]<<", "<<_rot[1]<<", "<<", "<<_rot[2]<<std::endl;
 
     while( !viewer->wasStopped() ) {
       viewer->spinOnce(100);
