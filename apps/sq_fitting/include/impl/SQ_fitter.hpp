@@ -2,7 +2,6 @@
  * @file SQ_fitter.hpp
  * @brief Implementation
  */
-
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/common/centroid.h>
 #include <pcl/common/pca.h>
@@ -55,6 +54,7 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
 			     const int &_N,
 			     const double &_thresh ) {
 
+
   // 0. Store parameters
   smax_ = _smax;
   smin_ = _smin;
@@ -85,14 +85,30 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
     s_i = smax_ -(i-1)*ds;
     par_i_1 = par_i;
     error_i_1 = error_i;
-    std::cout << "\t [DEBUG] Iteration "<<i<< std::endl;
-    std::cout << "\t [DEBUG] Voxel size: "<< s_i << std::endl;
+
 
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
     downsample( cloud_,
 		s_i,
 		cloud_i );
-    std::cout << "Size of pointcloud evaluated: "<< cloud_i->points.size() << std::endl;
+
+
+    ///////////////////////////////////////////////////////////
+    std::cout << "\t [DEBUG] Iteration "<<i<< std::endl;
+    std::cout << "\t [DEBUG] Voxel size: "<< s_i << std::endl;
+    std::cout << "\t [DEBUG] Size of downsampled cloud: "<< cloud_i->points.size() << std::endl;
+
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Debug downsampled cloud") );
+    viewer->addCoordinateSystem(1.0, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> col(cloud_i, 125,125,0);
+    viewer->addPointCloud( cloud_i, col, "Downsampled input" );
+
+    while( !viewer->wasStopped() ) {
+      viewer->spinOnce(100);
+      boost::this_thread::sleep( boost::posix_time::microseconds(100000) );
+    }
+    ///////////////////////////////////////////////////////////
+    
     minimize( cloud_i,
 	      par_i_1,
 	      par_i,
@@ -139,8 +155,9 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
   Eigen::Vector3f eigVal = pca.getEigenValues();
   Eigen::Matrix3f eigVec = pca.getEigenVectors();
   // Make sure 3 vectors are normal w.r.t. each other
-  Eigen::Vector3f v3 = (eigVec.col(0)).cross( eigVec.col(1) );
-  eigVec.col(2) = v3;
+  eigVec.col(2) = eigVec.col(0); // Z
+  Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
+  eigVec.col(0) = v3;
   Eigen::Vector3f rpy = eigVec.eulerAngles(2,1,0);
  
   _rot[0] = (double)rpy(2);
@@ -163,6 +180,21 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
   _dim[0] = ( maxPt.x - minPt.x ) / 2.0;
   _dim[1] = ( maxPt.y - minPt.y ) / 2.0;
   _dim[2] = ( maxPt.z - minPt.z ) / 2.0;
+
+
+    ///////////////////////////////////////////////////////////
+    std::cout << "\t [DEBUG] Bounding Box "<< std::endl;
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Debug Bounding Box") );
+    viewer->addCoordinateSystem(1.0, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> col(cloud_i, 125,125,0);
+    viewer->addPointCloud( cloud_temp, col, "Normalized cloud" );
+
+    while( !viewer->wasStopped() ) {
+      viewer->spinOnce(100);
+      boost::this_thread::sleep( boost::posix_time::microseconds(100000) );
+    }
+    ///////////////////////////////////////////////////////////
+
 
 }
 
@@ -216,8 +248,8 @@ bool SQ_fitter<PointT>::minimize( const PointCloudPtr &_cloud,
   
   // Set limits for principal axis of Super Quadric
   for( int i = 0; i < 3; ++i ) {
-    problem.SetParameterLowerBound( _out.dim, i, 0.01 );
-    problem.SetParameterUpperBound( _out.dim, i, 0.8 );
+    problem.SetParameterLowerBound( _out.dim, i, 0.02 );
+    problem.SetParameterUpperBound( _out.dim, i, 1000 );
   }
   // Set limits for coefficients e1 and e2
     problem.SetParameterLowerBound( _out.e, 0, 0.1 );
@@ -226,13 +258,21 @@ bool SQ_fitter<PointT>::minimize( const PointCloudPtr &_cloud,
     problem.SetParameterLowerBound( _out.e, 1, 0.1 );
     problem.SetParameterUpperBound( _out.e, 1, 1.9 );  
 
+   // Set limits for rotation between M_PI and -M_PI
+  for( int i = 0; i < 3; ++i ) {
+    problem.SetParameterLowerBound( _out.rot, i, -M_PI );
+    problem.SetParameterUpperBound( _out.rot, i, M_PI );
+  }
+
 
   // Set options
   ceres::Solver::Options options;
-  options.max_num_iterations = 50;
-  options.linear_solver_type = ceres::DENSE_QR;
-  options.minimizer_type = ceres::TRUST_REGION;
+  options.max_num_iterations = 50; // Default
+  options.linear_solver_type = ceres::DENSE_QR; // 11 parameters: not a sparse problem
+  options.minimizer_type = ceres::TRUST_REGION; // We got constraints
   options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+  options.logging_type = ceres::SILENT;
+  options.minimizer_progress_to_stdout = false;
   // Solve
   ceres::Solver::Summary summary;
   ceres::Solve( options, &problem, &summary );

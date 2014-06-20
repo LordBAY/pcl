@@ -3,6 +3,7 @@
  */
 #pragma once
 
+
 #include "SQ_parameters.h"
 #include <pcl/io/pcd_io.h>
 
