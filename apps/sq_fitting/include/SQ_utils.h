@@ -19,7 +19,6 @@ void visualizeSQ(  boost::shared_ptr<pcl::visualization::PCLVisualizer> &_viewer
 		   std::string _name,
 		   int _r, int _g, int _b );
 
-
 double dTheta_0( double K, double e,
 		      double a1, double a2,
 		      double t );

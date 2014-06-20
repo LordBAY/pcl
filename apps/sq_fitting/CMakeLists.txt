@@ -1,5 +1,7 @@
 cmake_minimum_required( VERSION 2.8 )
 
+set( CMAKE_CXX_FLAGS "-DMAX_LOG_LEVEL=1" )
+
 # PCL
 find_package( PCL )
 include_directories( ${PCL_INCLUDE_DIRS} )

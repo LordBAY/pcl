@@ -43,10 +43,28 @@ filename<< std::endl;
 	
   }
   
+  if( filename.size() == 0 ) {
+	std::cout << "Syntax: "<< argv[0]<< " -p filename.pcd"<< std::endl;
+	return 1;
+  }
+
+
+  // 2. Load pointcloud in fitter object
   fitter.setInputCloud( cloud );
 
+  
+  double dim[3]; double trans[3]; double rot[3];
+  double minDist;
+  fitter.getBoundingBox( cloud, dim, trans, rot );
+  if( dim[0] <= dim[1] && dim[0] <= dim[2] ) { minDist = dim[0]; }
+  if( dim[1] <= dim[0] && dim[1] <= dim[2] ) { minDist = dim[1]; }
+  if( dim[2] <= dim[0] && dim[2] <= dim[1] ) { minDist = dim[2]; }
+  double smin = minDist*2.0 / 15.0;
+  double smax = minDist*2.0 / 5.0;
+
   // 2. Fit. If successful, visualize and spit out summary
-  if( fitter.fit(0.05, 0.01,5,0.1) ) {
+  if( fitter.fit( smax, smin,
+				  5, 0.1) ) {
 
 	std::cout << "\t [GOOD] Fit superquadric!"<< std::endl;
 
@@ -66,5 +84,4 @@ filename<< std::endl;
 // Local Variables:
 // mode: c++
 // tab-width: 4
-// compile-command: cd ../build && make
 // End:
