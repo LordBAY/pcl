@@ -6,27 +6,12 @@
 #include <cmath>
 
 
-/**
- * @function f_SQ
- * @brief Equation (1) from Duncan's paper
- * @brief [ (x/a)^(2/e2) + (y/b)^(2/e2) ]^(e2/e1) + (z/c)^(2/e1)
- * @brief While x,y,z are the transformed points (Rot, trans)
- */
-double f_SQ( const SQ_parameters &_par, 
+double f_SQ( const double &a, const double &b, const double &c,
+	     const double &e1, const double &e2,
+	     const double &px, const double &py, const double &pz,
+	     const double &ra, const double &pa, const double &ya,
 	     const double &x, const double &y, const double &z ) {
-  
-  double a = _par.dim[0];
-  double b = _par.dim[1];
-  double c = _par.dim[2];
-  double e1 = _par.e[0];
-  double e2 = _par.dim[1];
-  double px = _par.trans[0];
-  double py = _par.trans[1]; 
-  double pz = _par.trans[2]; 
-  double ra = _par.rot[0]; 
-  double pa = _par.rot[1]; 
-  double ya = _par.rot[2];
-  
+
   double t2 = cos(ya);
   double t3 = sin(ra);
   double t4 = cos(ra);
@@ -50,6 +35,32 @@ double f_SQ( const SQ_parameters &_par,
   double t22 = 1.0/e1;
   double t23 = pow(pow(pow(1.0/(a*a)*(t20*t20),t21)+pow(1.0/(b*b)*(t19*t19),t21),e2*t22)+pow(1.0/(c*c)*(t13*t13),t22),e1)-1.0;
   return (t23*t23)*sqrt(a*b*c);
+
+}
+
+
+/**
+ * @function f_SQ
+ * @brief Equation (1) from Duncan's paper
+ * @brief [ (x/a)^(2/e2) + (y/b)^(2/e2) ]^(e2/e1) + (z/c)^(2/e1)
+ * @brief While x,y,z are the transformed points (Rot, trans)
+ */
+double f_SQ( const SQ_parameters &_par, 
+	     const double &x, const double &y, const double &z ) {
+  
+  double a = _par.dim[0];
+  double b = _par.dim[1];
+  double c = _par.dim[2];
+  double e1 = _par.e[0];
+  double e2 = _par.dim[1];
+  double px = _par.trans[0];
+  double py = _par.trans[1]; 
+  double pz = _par.trans[2]; 
+  double ra = _par.rot[0]; 
+  double pa = _par.rot[1]; 
+  double ya = _par.rot[2];
+  
+  return f_SQ(a,b,c, e1,e2, px,py,pz, ra,pa,ya, x,y,z );
 
 }
 
@@ -117,6 +128,26 @@ void jac_SQ( const SQ_parameters &_par,
   double ra = _par.rot[0]; 
   double pa = _par.rot[1]; 
   double ya = _par.rot[2];
+
+  return jac_SQ( a, b, c,
+		 e1, e2,
+		 px, py, pz,
+		 ra, pa, ya,
+		 x, y, z,
+		 Jac );
+}
+
+/**
+ * @function jac_SQ
+ * @brief
+ */
+
+void jac_SQ( const double &a, const double &b, const double &c,
+	     const double &e1, const double &e2,
+	     const double &px, const double &py, const double &pz,
+	     const double &ra, const double &pa, const double &ya,
+	     const double &x, const double &y, const double &z,
+	     double Jac[11] ) {
 
     double t2 = cos(ya);
     double  t3 = sin(ra);
