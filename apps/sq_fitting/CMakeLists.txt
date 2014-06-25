@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.8 )
 
-set( CMAKE_CXX_FLAGS "-DMAX_LOG_LEVEL=1" )
+set( CMAKE_CXX_FLAGS "-std=c++0x" )
 
 # PCL
 find_package( PCL )
@@ -35,7 +35,7 @@ set_target_properties( SQ_fitter_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( cloud_basicOperations tests/cloud_basicOperations.cpp )
-target_link_libraries( cloud_basicOperations ${PCL_LIBRARIES} )
+target_link_libraries( cloud_basicOperations SQ_fitter ${PCL_LIBRARIES} )
 set_target_properties( cloud_basicOperations PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
@@ -53,5 +53,11 @@ set_target_properties( sampleSQ PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 add_executable( sampleSQ_naive tests/sampleSQ_naive.cpp )
 target_link_libraries( sampleSQ_naive SQ_utils ${PCL_LIBRARIES} )
 set_target_properties( sampleSQ_naive PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( alterCloud tests/alterCloud.cpp )
+target_link_libraries( alterCloud ${PCL_LIBRARIES} )
+set_target_properties( alterCloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 

@@ -41,7 +41,8 @@ struct SQBaseEquation {
     fxy = pow( ceres::abs(xe/dim[0]), T(2.0)/e[1] ) + pow( ceres::abs(ye/dim[1]), T(2.0)/e[1] );
     fz =  pow( ceres::abs(ze/dim[2]), T(2.0)/e[0] );
     F = pow( ceres::abs(fxy), T(e[1]/e[0]) ) + fz;    
-    residual[0] = sqrt(dim[0]*dim[1]*dim[2])*( pow(F, e[1]) -T(1.0) );
+    //residual[0] = sqrt(dim[0]*dim[1]*dim[2])*( pow(F, e[1]) -T(1.0) );
+    residual[0] = sqrt(dim[0]*dim[1]*dim[2])*( F -T(1.0) );
     return true;
     
   }

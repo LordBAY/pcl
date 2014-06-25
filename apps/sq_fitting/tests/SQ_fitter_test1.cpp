@@ -31,10 +31,7 @@ int main( int argc, char* argv[] ) {
 		std::cout << "\t [ERROR] Could not read pointcloud "<<
 filename<< std::endl;
 		return 1;
-      } else {
-		std::cout << "Read pointcloud with "<< cloud->points.size() << " points." << std::endl;
-	  }
-
+      } 
     } break;
 	case 'h': {
 	  std::cout <<"Syntax: "<<argv[0]<<" filename.pcd"<< std::endl;
@@ -55,7 +52,7 @@ filename<< std::endl;
   
   double dim[3]; double trans[3]; double rot[3];
   double minDist;
-  fitter.getBoundingBox( cloud, dim, trans, rot );
+  fitter.getBoundingBox( cloud, dim, trans, rot, false );
   if( dim[0] <= dim[1] && dim[0] <= dim[2] ) { minDist = dim[0]; }
   if( dim[1] <= dim[0] && dim[1] <= dim[2] ) { minDist = dim[1]; }
   if( dim[2] <= dim[0] && dim[2] <= dim[1] ) { minDist = dim[2]; }
