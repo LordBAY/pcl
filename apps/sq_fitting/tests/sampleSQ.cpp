@@ -34,7 +34,7 @@ int main( int argc, char* argv[] ) {
     filename = std::string("sampleSQ_output.pcd");
 
     opterr = 0;
-    while( (v = getopt(argc, argv, "N:a:b:c:x:y:z:R:P:Y:e:f:h")) != -1 ) {
+    while( (v = getopt(argc, argv, "N:a:b:c:x:y:z:R:P:Y:e:f:hn")) != -1 ) {
 	
 	switch(v) {
 	case 'N': {
@@ -76,7 +76,7 @@ int main( int argc, char* argv[] ) {
 	case 'h': {
 	  printHelp();
 	  return 1;
-	} break;
+	} break;	  
     case '?': {
 		printHelp();	
 		return 1;
@@ -86,7 +86,7 @@ int main( int argc, char* argv[] ) {
     } // end of while
 
 
-    // Sample SQ naive
+    // Sample SQ uniform
     SQ_parameters par; 
     par.dim[0] = a; par.dim[1] = b; par.dim[2] = c;
     par.e[0] = e1; par.e[1] = e2;

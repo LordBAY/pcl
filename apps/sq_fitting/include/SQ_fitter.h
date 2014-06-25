@@ -24,7 +24,8 @@ class SQ_fitter {
   void getBoundingBox(const PointCloudPtr &_cloud,
 		      double _dim[3],
 		      double _trans[3],
-		      double _rot[3] );
+		      double _rot[3],
+		      bool _debug = false );
   bool fit( const double &_smax = 0.05,
 	    const double &_smin = 0.01,
 	    const int &_N = 5,
