@@ -254,11 +254,16 @@ bool SQ_fitter<PointT>::minimize( const PointCloudPtr &_cloud,
   // Add residual blocks
   typename pcl::PointCloud<PointT>::iterator it;
   for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
-    problem.AddResidualBlock( new ceres::AutoDiffCostFunction<SQBaseEquation, 1, 3, 2,3,3>(new SQBaseEquation((*it).x, 
+      SQCostFunction* cost_function = new SQCostFunction( (*it).x, (*it).y, (*it).z );
+      problem.AddResidualBlock( cost_function, new ceres::CauchyLoss(0.5), _out.dim, _out.e, _out.trans, _out.rot );
+      /*
+      problem.AddResidualBlock( new ceres::AutoDiffCostFunction<SQBaseEquation, 1, 3, 2,3,3>(new SQBaseEquation((*it).x, 
 													      (*it).y, 
 													      (*it).z)),
-			      NULL, //new ceres::CauchyLoss(0.5),
+			      NULL,
 			      _out.dim, _out.e, _out.trans, _out.rot );
+      */
+
   }
   
   
