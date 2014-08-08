@@ -1,12 +1,16 @@
 cmake_minimum_required( VERSION 2.8 )
 
-set( CMAKE_CXX_FLAGS "-std=c++0x" )
+set( CMAKE_CXX_FLAGS "-std=c++0x -u MAIN__" )
 
 # PCL
 find_package( PCL )
 include_directories( ${PCL_INCLUDE_DIRS} )
 link_directories( ${PCL_LIBRARY_DIRS} )
 add_definitions( ${PCL_DEFINITIONS} )
+
+# levmar
+add_subdirectory( levmar )
+
 
 # Ceres
 find_package( Ceres )
@@ -28,36 +32,5 @@ target_link_libraries( SQ_fitter SQ_utils ${PCL_LIBRARIES} ${CERES_LIBRARIES} pt
 set_target_properties( SQ_fitter PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-# Run test
-add_executable( SQ_fitter_test1 tests/SQ_fitter_test1.cpp )
-target_link_libraries( SQ_fitter_test1 SQ_fitter ${PCL_LIBRARIES} ${CERES_LIBRARIES} pthread )
-set_target_properties( SQ_fitter_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-add_executable( cloud_basicOperations tests/cloud_basicOperations.cpp )
-target_link_libraries( cloud_basicOperations SQ_fitter ${PCL_LIBRARIES} )
-set_target_properties( cloud_basicOperations PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-add_executable( SQ_utils_SE_test tests/SQ_utils_SE_test.cpp )
-target_link_libraries( SQ_utils_SE_test SQ_utils ${PCL_LIBRARIES} )
-set_target_properties( SQ_utils_SE_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-
-add_executable( sampleSQ tests/sampleSQ.cpp )
-target_link_libraries( sampleSQ SQ_utils ${PCL_LIBRARIES} )
-set_target_properties( sampleSQ PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-add_executable( sampleSQ_naive tests/sampleSQ_naive.cpp )
-target_link_libraries( sampleSQ_naive SQ_utils ${PCL_LIBRARIES} )
-set_target_properties( sampleSQ_naive PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-
-add_executable( alterCloud tests/alterCloud.cpp )
-target_link_libraries( alterCloud ${PCL_LIBRARIES} )
-set_target_properties( alterCloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
+# Add tests
+add_subdirectory( tests )
