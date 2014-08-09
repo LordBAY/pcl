@@ -41,7 +41,6 @@ void jacexpfunc( double *p,
 
 }
 
-
 int main( int argc, char* argv[] ) {
 
     srandom(0);
@@ -63,9 +62,6 @@ int main( int argc, char* argv[] ) {
 	x[i] = (5.0*exp(-0.1*i)+1.0) + gNoise(0.0, 0.1);
     }
 
-    for( i = 0; i <n; ++i ) {
-	std::cout << " "<< x[i];
-    } std::cout << std::endl;
 
     // Initial values for parameters
     p[0] = 1.0;
@@ -90,10 +86,6 @@ int main( int argc, char* argv[] ) {
 		       NULL, NULL, NULL );
 
 
-    for( i = 0; i <n; ++i ) {
-	std::cout << " "<< x[i];
-    } std::cout << std::endl;
-
     tf = clock();
     dt = (double)(tf-ts)/(double)CLOCKS_PER_SEC;
     std::cout << "Calculation time: "<< dt << std::endl;
@@ -104,4 +96,5 @@ int main( int argc, char* argv[] ) {
 
     return 0;
 }
+
 
