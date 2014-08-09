@@ -40,3 +40,8 @@ target_link_libraries( levmar_test levmar lapack blas )
 set_target_properties( levmar_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( levmar_test5 levmar_test5.cpp )
+target_link_libraries( levmar_test5 SQ_utils levmar lapack blas )
+set_target_properties( levmar_test5 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
