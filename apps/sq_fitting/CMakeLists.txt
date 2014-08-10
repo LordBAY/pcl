@@ -35,3 +35,6 @@ set_target_properties( SQ_fitter PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 
 # Add tests
 add_subdirectory( tests )
+
+# Add demo
+add_subdirectory( demo )

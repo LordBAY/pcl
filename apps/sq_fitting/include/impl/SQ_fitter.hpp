@@ -466,7 +466,7 @@ void SQ_fitter<PointT>::visualize() {
   
   // 2. Visualize input pointcloud (GREEN)
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> col(cloud_, 0,255,0);
-  viewer->addPointCloud( cloud_, col, "Input cloud" );
+  viewer->addPointCloud( cloud_, "Input cloud" );
   
   Eigen::Matrix3f rot; rot = Eigen::AngleAxisf( (float)par_in_.rot[2], Eigen::Vector3f::UnitZ() )*
 			 Eigen::AngleAxisf( (float)par_in_.rot[1], Eigen::Vector3f::UnitY() )*
@@ -498,4 +498,12 @@ void SQ_fitter<PointT>::visualize() {
   }
 
   
+}
+
+/**
+ * @function getSampledOutput
+ */
+template<typename PointT>
+typename SQ_fitter<PointT>::PointCloudPtr SQ_fitter<PointT>::getSampledOutput() {
+  return  sampleSQ_uniform( par_out_ );
 }

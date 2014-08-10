@@ -29,8 +29,7 @@ int main( int argc, char* argv[] ) {
       filename = std::string( optarg );
       if( pcl::io::loadPCDFile<pcl::PointXYZ>( filename,
 											   *cloud ) == -1 ) {
-		std::cout << "\t [ERROR] Could not read pointcloud "<<
-filename<< std::endl;
+		std::cout<<"\t [ERROR] Could not read pointcloud "<<filename<< std::endl;
 		return 1;
       } 
     } break;
@@ -67,7 +66,7 @@ filename<< std::endl;
   // 2. Fit. If successful, visualize and spit out summary
   double thresh = 0.1;
   int N = 5;
-  std::cout << "Call fitting function with voxel limits (: "<<smin<<","<<smax<<"), N: "<< N<<" and  thresh: "<< thresh << std::endl;
+  std::cout << "\t * Call fitting function with voxel limits (: "<<smin<<","<<smax<<"), N: "<< N<<" and  thresh: "<< thresh << std::endl;
   if( fitter.fit( minType, 
 				  smax, smin,
 				  N, thresh) ) {
@@ -76,7 +75,12 @@ filename<< std::endl;
 
 	// 3. Visualize
 	fitter.visualize();
-  
+	pcl::PointCloud<pcl::PointXYZ>::Ptr fitted;
+	fitted = fitter.getSampledOutput();
+	char name[50];
+	sprintf( name, "fit.pcd", filename.c_str() );
+	pcl::io::savePCDFile( name, *fitted, true );
+
   } else {
 	std::cout << "\t [BAD] Did not fit properly" << std::endl;
   }
