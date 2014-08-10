@@ -12,11 +12,11 @@
  * @brief Print in a human-friendly form the parameters info
  */
 void printParamsInfo( const SQ_parameters &_par ) {
-
-  std::cout << "\t * Axis dimensions: "<< _par.dim[0] << ", "<< _par.dim[1]<<", "<< _par.dim[2] << std::endl;
-  std::cout << "\t * Epsilons: "<< _par.e[0] << ", "<< _par.e[1]<< std::endl;
-  std::cout << "\t * Trans: "<< _par.trans[0] << ", "<< _par.trans[1]<<", "<< _par.trans[2] << std::endl;
-  std::cout << "\t * Rot: "<< _par.rot[0] << ", "<< _par.rot[1]<<", "<< _par.rot[2] << std::endl;
+    
+    std::cout << "* Axes:("<<_par.dim[0]<<", "<<_par.dim[1]<<", "<<_par.dim[2] <<") ";
+    std::cout << " E:("<<_par.e[0]<< ", "<<_par.e[1]<<") ";
+    std::cout << " T:("<<_par.trans[0] << ", "<< _par.trans[1]<<", "<< _par.trans[2] <<") ";
+    std::cout << " R:("<<_par.rot[0]<< ", "<<_par.rot[1]<<", "<<_par.rot[2]<<")"<<std::endl;
 }
 
 

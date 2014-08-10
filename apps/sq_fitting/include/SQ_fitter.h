@@ -33,11 +33,12 @@ class SQ_fitter {
 		      double _trans[3],
 		      double _rot[3],
 		      bool _debug = false );
-  bool fit( const double &_smax = 0.05,
+  bool fit( const int &_type = LEVMAR_MINIMIZER, 
+	    const double &_smax = 0.05,
 	    const double &_smin = 0.01,
 	    const int &_N = 5,
 	    const double &_thresh = 0.1 );
-
+  
   void downsample( const PointCloudPtr &_cloud,
 		   const double &_voxelSize,
 		   PointCloudPtr &_cloud_downsampled );
