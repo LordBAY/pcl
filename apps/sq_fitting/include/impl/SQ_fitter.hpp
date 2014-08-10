@@ -15,6 +15,7 @@
 #include "SQ_structs.h"
 #include "analytic_equations.h"
 
+#include <levmar/levmar.h>
 
 /**
  * @function SQ_fitter
@@ -244,71 +245,177 @@ template<typename PointT>
 bool SQ_fitter<PointT>::minimize( const PointCloudPtr &_cloud, 
 				  const SQ_parameters &_in,
 				  SQ_parameters &_out,
-				  double &_error ) {
+				  double &_error,
+				  int _type ) {
 
-  // Parameters initially _in:
-  _out = _in; 
-  
-  // Create problem 
-  ceres::Problem problem;
-  // Add residual blocks
-  typename pcl::PointCloud<PointT>::iterator it;
-  for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
-      SQCostFunction* cost_function = new SQCostFunction( (*it).x, (*it).y, (*it).z );
-      problem.AddResidualBlock( cost_function, new ceres::CauchyLoss(0.5), _out.dim, _out.e, _out.trans, _out.rot );
-      /*
-      problem.AddResidualBlock( new ceres::AutoDiffCostFunction<SQBaseEquation, 1, 3, 2,3,3>(new SQBaseEquation((*it).x, 
-													      (*it).y, 
-													      (*it).z)),
-			      NULL,
-			      _out.dim, _out.e, _out.trans, _out.rot );
-      */
+    switch( _type ) {
+	
+    case CERES_MINIMIZER: {
+	return minimize_ceres( _cloud, _in, _out, _error );
+    } break;
 
-  }
+    case LEVMAR_MINIMIZER: {
+	return minimize_levmar( _cloud, _in, _out, _error );
+    } break; 
+    
+    }
+
+}
+ 
+
+/**
+ * @function minimize_ceres
+ */
+template<typename PointT>
+bool SQ_fitter<PointT>::minimize_ceres( const PointCloudPtr &_cloud,
+					const SQ_parameters &_in,
+					SQ_parameters &_out,
+					double &_error ) {
+    
+    // Parameters initially _in:
+    _out = _in; 
+    
+    // Create problem 
+    ceres::Problem problem;
+    // Add residual blocks
+    typename pcl::PointCloud<PointT>::iterator it;
+    for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
+	SQCostFunction* cost_function = new SQCostFunction( (*it).x, (*it).y, (*it).z );
+	problem.AddResidualBlock( cost_function, new ceres::CauchyLoss(0.5), _out.dim, _out.e, _out.trans, _out.rot );
+    }
   
   
-  // Set limits for principal axis of Super Quadric
-  for( int i = 0; i < 3; ++i ) {
-    problem.SetParameterLowerBound( _out.dim, i, 0.02 );
-    problem.SetParameterUpperBound( _out.dim, i, 1000 );
-  }
-  // Set limits for coefficients e1 and e2
+    // Set limits for principal axis of Super Quadric
+    for( int i = 0; i < 3; ++i ) {
+	problem.SetParameterLowerBound( _out.dim, i, 0.01 );
+	problem.SetParameterUpperBound( _out.dim, i, 2 );
+    }
+    // Set limits for coefficients e1 and e2
     problem.SetParameterLowerBound( _out.e, 0, 0.1 );
     problem.SetParameterUpperBound( _out.e, 0, 1.0 );  
-
+    
     problem.SetParameterLowerBound( _out.e, 1, 0.1 );
     problem.SetParameterUpperBound( _out.e, 1, 1.9 );  
+    
+    // Set limits for rotation between M_PI and -M_PI
+    for( int i = 0; i < 3; ++i ) {
+	problem.SetParameterLowerBound( _out.rot, i, -M_PI );
+	problem.SetParameterUpperBound( _out.rot, i, M_PI );
+    }
+    
 
-   // Set limits for rotation between M_PI and -M_PI
-  for( int i = 0; i < 3; ++i ) {
-    problem.SetParameterLowerBound( _out.rot, i, -M_PI );
-    problem.SetParameterUpperBound( _out.rot, i, M_PI );
-  }
-
-
-  // Set options
-  ceres::Solver::Options options;
-  options.max_num_iterations = 50; // Default
-  options.linear_solver_type = ceres::DENSE_SCHUR; // 11 parameters: not a sparse problem
-  options.minimizer_type = ceres::TRUST_REGION; // We got constraints
-  options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-  options.logging_type = ceres::SILENT;
-  options.minimizer_progress_to_stdout = false;
-  // Solve
-  ceres::Solver::Summary summary;
-  ceres::Solve( options, &problem, &summary );
-  
-  // Return status and error
-  _error = error_metric( _out, cloud_ );
-
-  int status = summary.termination_type;
-  if( status == ceres::USER_SUCCESS ||
-      status == ceres::CONVERGENCE ) {
-    return true;
-  } else {
-    return false;
-  }
+    // Set options
+    ceres::Solver::Options options;
+    options.max_num_iterations = 50; // Default
+    options.linear_solver_type = ceres::DENSE_SCHUR; // 11 parameters: not a sparse problem
+    options.minimizer_type = ceres::TRUST_REGION; // We got constraints
+    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+    options.logging_type = ceres::SILENT;
+    options.minimizer_progress_to_stdout = false;
+    // Solve
+    ceres::Solver::Summary summary;
+    ceres::Solve( options, &problem, &summary );
+    
+    // Return status and error
+    _error = error_metric( _out, cloud_ );
+    
+    int status = summary.termination_type;
+    if( status == ceres::USER_SUCCESS ||
+	status == ceres::CONVERGENCE ) {
+	return true;
+    } else {
+	return false;
+    }
 }
+
+
+
+
+/**
+ * @function minimize_ceres
+ */
+template<typename PointT>
+bool SQ_fitter<PointT>::minimize_levmar( const PointCloudPtr &_cloud,
+					 const SQ_parameters &_in,
+					 SQ_parameters &_out,
+					 double &_error ) {
+    
+    // Parameters initially _in:
+    _out = _in; 
+
+    // Set necessary parameters
+    int n = _cloud->points.size();
+    int m = 11; 
+    double p[m]; // Parameters of SQ
+    double y[n]; // Values we want to achieve
+
+    double opts[LM_OPTS_SZ];
+    double info[LM_INFO_SZ];
+    
+    opts[0] = LM_INIT_MU;
+    opts[1] = 1E-15;
+    opts[2] = 1E-15;
+    opts[3] = 1E-20;
+    opts[4] = LM_DIFF_DELTA;
+
+    struct levmar_data data;
+    data.x = new double[n];
+    data.y = new double[n];
+    data.z = new double[n];
+    data.num = n;
+
+
+    int i; int ret;
+    typename pcl::PointCloud<PointT>::iterator pit;
+    for( pit = _cloud->begin(), i = 0; pit != _cloud->end(); ++pit, ++i ) {
+	data.x[i] = (*pit).x;
+	data.y[i] = (*pit).y;
+	data.z[i] = (*pit).z;
+    }
+
+    // Set minimizer value to zero (could be 1, depending of what equation you are minimizing)
+    for( i = 0; i < n; ++i ) { y[i] = 0.0; }
+  
+    // Initialize values for parameters p
+    for( i = 0; i < 3; ++i ) { p[i] = _in.dim[i]; }
+    for( i = 0; i < 2; ++i ) { p[i+3] = _in.e[i]; }
+    for( i = 0; i < 3; ++i ) { p[i+5] = _in.trans[i]; }
+    for( i = 0; i < 3; ++i ) { p[i+8] = _in.rot[i]; }
+    
+    // Set limits
+    double ub[m], lb[m];
+    for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 1.0; }
+    for( i = 0; i < 2; ++i ) { lb[i+3] = 0.1; ub[i+3] = 1.9; }
+    for( i = 0; i < 3; ++i ) { lb[i+5] = -2.0; ub[i+5] = 2.0; }
+    for( i = 0; i < 3; ++i ) { lb[i+8] = -M_PI; ub[i+8] = M_PI; }
+    
+    ret = dlevmar_bc_der( levmar_fx,
+			  levmar_jac,
+			  p, y, m, n,
+			  lb, ub,
+			  NULL,
+			  1000,
+			  opts, info,
+			  NULL, NULL, (void*)&data );
+
+    // Fill _out
+    for( i = 0; i < 3; ++i ) { _out.dim[i] = p[i]; }
+    for( i = 0; i < 2; ++i ) { _out.e[i] = p[i+3]; }
+    for( i = 0; i < 3; ++i ) { _out.trans[i] = p[i+5]; }
+    for( i = 0; i < 3; ++i ) { _out.rot[i] = p[i+8]; }
+    
+
+    // Return status and error
+    _error = error_metric( _out, cloud_ );
+    
+    // If stopped by invalid (TODO: Add other reasons)
+    if( info[6] == 7 ) {
+	return false;
+    } else {
+	return true;
+    }
+}
+
 
 /**
  * @function error_metric

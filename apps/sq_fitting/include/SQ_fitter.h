@@ -7,6 +7,13 @@
 #include "SQ_parameters.h"
 #include <pcl/io/pcd_io.h>
 
+enum MINIMIZER_TYPE {
+    CERES_MINIMIZER = 0,
+    LEVMAR_MINIMIZER = 1
+};
+
+
+
 /**
  * @class SQ_fitter
  */
@@ -38,7 +45,19 @@ class SQ_fitter {
   bool minimize( const PointCloudPtr &_cloud, 
 		 const SQ_parameters &_in,
 		 SQ_parameters &_out,
-		 double &_error );
+		 double &_error,
+		 int _type = LEVMAR_MINIMIZER );
+
+  bool minimize_ceres( const PointCloudPtr &_cloud, 
+		       const SQ_parameters &_in,
+		       SQ_parameters &_out,
+		       double &_error );
+
+  bool minimize_levmar( const PointCloudPtr &_cloud, 
+			const SQ_parameters &_in,
+			SQ_parameters &_out,
+			double &_error );
+
 
   double error_metric( SQ_parameters _par,
 		       const PointCloudPtr &_cloud );
