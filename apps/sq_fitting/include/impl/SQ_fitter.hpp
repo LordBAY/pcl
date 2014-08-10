@@ -48,11 +48,12 @@ void SQ_fitter<PointT>::setInputCloud( const PointCloudPtr &_cloud ) {
  * @brief Fit using Levenberg-Marquadt with box constraints
  */
 template<typename PointT>
-bool SQ_fitter<PointT>::fit( const double &_smax,
+bool SQ_fitter<PointT>::fit( const int &_type,
+			     const double &_smax,
 			     const double &_smin,
 			     const int &_N,
 			     const double &_thresh ) {
-
+    
   // 0. Store parameters
   smax_ = _smax;
   smin_ = _smin;
@@ -63,7 +64,7 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
   double s_i; bool fitted; 
   SQ_parameters par_i, par_i_1;
   
-  ds = (smax_ - smin_) / (double) N_;
+  ds = (smax_ - smin_) / (double) (N_-1);
   
   // 1. Initialize par_in_ with bounding box values
   getBoundingBox( cloud_, 
@@ -82,16 +83,15 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
 
   /////////////////////////////////////////////
   std::cout << "\t ****************************"<<std::endl;
-  std::cout << "\t INITIAL GUESS PARAMETERS: " << std::endl;
-  printParamsInfo(par_in_);
-  std::cout << "\t Error metric: "<< error_i << std::endl;
-  std::cout << "\t ****************************"<<std::endl;
+  std::cout << "\t ITERATION 0 (init params): " << std::endl;
+  std::cout<<"\t "; printParamsInfo(par_in_);
+  std::cout << "\t * Error metric: "<< error_i << " cloud size: "<< cloud_->points.size() << std::endl;
   ////////////////////////////////////////////
 
 
-  for( int i = 1; i <= N_; ++i ) {
+  for( int i = 0; i < N_; ++i ) {
 
-    s_i = smax_ - (i-1)*ds;
+    s_i = smax_ - (i)*ds;
     par_i_1 = par_i;
     error_i_1 = error_i;
 
@@ -103,16 +103,14 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
     minimize( cloud_i,
 	      par_i_1,
 	      par_i,
-	      error_i );
+	      error_i,
+	      _type );
 
     ///////////////////////////////////////////////////////////
-    std::cout << "\t *********************"<<std::endl;
-    std::cout << "\t ITERATION "<<i<< std::endl;
-    std::cout << "\t * Voxel size: "<< s_i << std::endl;
-    std::cout << "\t * Size of downsampled cloud: "<< cloud_i->points.size() << std::endl;
-    printParamsInfo( par_i );
+    std::cout << "\t ITERATION "<<i+1<< std::endl;
+    std::cout << "\t * Voxel size: "<< s_i << ", Downsampled cloud points: "<< cloud_i->points.size() << std::endl;
+    std::cout << "\t "; printParamsInfo( par_i );
     std::cout << "\t Error metric: "<< error_i << std::endl;
-    std::cout << "\t *********************"<<std::endl;
     ///////////////////////////////////////////////////////////
     
     // [CONDITION]
@@ -156,6 +154,7 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
   Eigen::Vector3f eigVal = pca.getEigenValues();
   Eigen::Matrix3f eigVec = pca.getEigenVectors();
   // Make sure 3 vectors are normal w.r.t. each other
+  
   eigVec.col(2) = eigVec.col(0); // Z
   Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
   eigVec.col(0) = v3; 

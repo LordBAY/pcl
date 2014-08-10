@@ -21,7 +21,8 @@ int main( int argc, char* argv[] ) {
   // 1. Read pointcloud from input
   int v;
   std::string filename;
-  while( (v=getopt( argc, argv, "p:h")) != -1 ) {
+  int minType = LEVMAR_MINIMIZER;
+  while( (v=getopt( argc, argv, "p:t:h")) != -1 ) {
 	
     switch(v) {
     case 'p': {
@@ -33,6 +34,10 @@ filename<< std::endl;
 		return 1;
       } 
     } break;
+		// Set type of minimizer (ceres or levmar)
+	case 't': {
+		minType = atoi(optarg);
+	} break;
 	case 'h': {
 	  std::cout <<"Syntax: "<<argv[0]<<" filename.pcd"<< std::endl;
 	} break;
@@ -60,14 +65,16 @@ filename<< std::endl;
   double smax = minDist*2.0 / 5.0;
 
   // 2. Fit. If successful, visualize and spit out summary
-  if( fitter.fit( smax, smin,
-				  5, 0.1) ) {
+  double thresh = 0.1;
+  int N = 5;
+  std::cout << "Call fitting function with voxel limits (: "<<smin<<","<<smax<<"), N: "<< N<<" and  thresh: "<< thresh << std::endl;
+  if( fitter.fit( minType, 
+				  smax, smin,
+				  N, thresh) ) {
 
 	std::cout << "\t [GOOD] Fit superquadric!"<< std::endl;
 
-	// 3. Spit out result
-	fitter.printResults();
-	// 4. Visualize
+	// 3. Visualize
 	fitter.visualize();
   
   } else {
