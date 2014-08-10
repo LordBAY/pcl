@@ -65,6 +65,7 @@ class SQ_fitter {
 
   void printResults();
   void visualize();
+  PointCloudPtr getSampledOutput();
 
  private:
   SQ_parameters par_in_;
