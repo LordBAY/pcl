@@ -87,19 +87,26 @@ class SQCostFunction : public ceres::SizedCostFunction<1, 3,2,3,3> {
 	double pa = _pars[3][1];
 	double ya = _pars[3][2];
 
+	double p[11] = {a,b,c,e1,e2,px,py,pz,ra,pa,ya};
+	/*
 	residuals[0] = f_SQ(a,b,c,
 			    e1,e2,
 			    px,py,pz,
 			    ra,pa,ya,
 			    x,y,z);
+	*/
+	residuals[0] = fx_SQ(p,x,y,z);
+
 
 	if( jacobians != NULL && jacobians[0] != NULL ) {
-	    double J[11];
+	    double* J = new double[11];
+	    J = jacx_SQ( p, x, y, z);
+	    /*
 	    jac_SQ( a, b, c, e1, e2,
 		    px, py, pz,
 		    ra, pa, ya,
 		    x,y,z, J );
-
+	    */
 	    jacobians[0][0] = J[0];
 	    jacobians[0][1] = J[1];
 	    jacobians[0][2] = J[2];

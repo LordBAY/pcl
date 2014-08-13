@@ -34,10 +34,10 @@ std::vector<pcl::PointCloud<PointT>::Ptr> gFittedClouds;
 
 //-- Functions declaration
 void printUsage( char* argv0 );
-void grabberCallback( const pcl::PointCloud<PointT>::Ptr &_cloud );
+void grabberCallback( const pcl::PointCloud<PointT>::ConstPtr &_cloud );
 void keyboardEventOccurred( const pcl::visualization::KeyboardEvent &_event,
 			    void *_nothing );
-boost::shared_ptr<pcl::visualization::CloudViewer> createViewer();
+boost::shared_ptr<pcl::visualization::CloudViewer> createViewer( std::string _name );
 void processCloud( const pcl::PointCloud<PointT>::Ptr &_cloud );
 
 
@@ -83,11 +83,11 @@ int main( int argc, char* argv[] ) {
     // Create OpenNI grabber, register key events
     gKinectGrabber = new pcl::OpenNIGrabber();
     if( gKinectGrabber == 0 ) { return 1; }
-    boost::function< void (const pcl::PointCloud<PointT>::Ptr&) > f = boost::bind( &grabberCallback, _1 );
+    boost::function< void (const pcl::PointCloud<PointT>::ConstPtr&) > f = boost::bind( &grabberCallback, _1 );
     gKinectGrabber->registerCallback(f);
     
     // Create viewer and initialize
-    gViewer = createViewer();
+    gViewer = createViewer("viewOpenNI");
     gKinectGrabber->start();
     
     // Loop expecting capture signal (press ESC)
@@ -221,8 +221,8 @@ void processCloud( const pcl::PointCloud<PointT>::Ptr &_cloud ) {
     int rc, gc, bc;
     for( int i = 0; i < gFittedClouds.size(); ++i ) {
       sprintf( name, "view_%d", i );
-      rc = rand() % 255;
-      pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> col( gFittedClouds[i], 255,0,255);
+      rc = rand() % 255; gc = rand() % 255; bc = rand() % 255;
+      pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> col( gFittedClouds[i], rc, gc, bc);
       viewer->addPointCloud( gFittedClouds[i], col, name  );      
     }
     while( !viewer->wasStopped() ) {
@@ -236,14 +236,16 @@ void processCloud( const pcl::PointCloud<PointT>::Ptr &_cloud ) {
 /**
  * @function grabberCallback
  */
-void grabberCallback( const pcl::PointCloud<PointT>::Ptr &_cloud ) {
+void grabberCallback( const pcl::PointCloud<PointT>::ConstPtr &_cloud ) {
   
   if( !gViewer->wasStopped() ) {
     gViewer->showCloud( _cloud );
   }
   
   if( gProcessCloud ) {
-    processCloud( _cloud );
+    pcl::PointCloud<PointT>::Ptr cloud( new pcl::PointCloud<PointT>() );
+    *cloud = *_cloud;
+    processCloud( cloud );
     gProcessCloud = false;
   }
 
@@ -264,8 +266,8 @@ void keyboardEventOccurred( const pcl::visualization::KeyboardEvent &_event,
 /**
  * @function createViewer
  */
-boost::shared_ptr<pcl::visualization::CloudViewer> createViewer() {
-  boost::shared_ptr<pcl::visualization::CloudViewer> v( new pcl::visualization::CloudViewer("3D Viewer") );
+boost::shared_ptr<pcl::visualization::CloudViewer> createViewer( std::string _name ) {
+  boost::shared_ptr<pcl::visualization::CloudViewer> v( new pcl::visualization::CloudViewer(_name) );
   v->registerKeyboardCallback( keyboardEventOccurred );
 
   return (v);
