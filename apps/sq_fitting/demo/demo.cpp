@@ -116,12 +116,14 @@ void grabberCallback( const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr &_cloud
 
     
     /** Set mindGapper (to generate mirror pointclouds)*/
+
     mindGapper<pcl::PointXYZRGBA> mG;
     mG.setTablePlane( gTs.getTableCoeffs() );
     mG.setFittingParams( 6,5,0.01,M_PI/9.0 );
     mG.setDeviceParams( width, height, f, (double)cx, (double)cy );
 
     /** Generate mirror pointclouds */
+
     for( int i = 0; i < gTs.getNumClusters(); ++i ) {
       pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cluster( new pcl::PointCloud<pcl::PointXYZRGBA>() );
       *cluster = gTs.getCluster(i);

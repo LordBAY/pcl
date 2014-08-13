@@ -1,6 +1,9 @@
 # tabletop_symmetry
 project( tabletop_symmetry )
 
+# OpenCV
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # dt
 add_subdirectory(dt)
