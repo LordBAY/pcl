@@ -55,6 +55,8 @@ public:
     PointCloud getTable() { return mTable_Points; }
     std::vector<double> getTableCoeffs() { return mTableCoeffs; }
     
+    PointCloud getDownFilteredCloud() { return dDownsampledFilteredCloud; }
+
  private:
     
     //! Min number of inliers for reliable plane detection

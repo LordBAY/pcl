@@ -25,7 +25,8 @@ class SQ_fitter {
   SQ_fitter();
   ~SQ_fitter();
 
-  typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
+  typedef pcl::PointCloud<PointT> PointCloud;
+  typedef typename PointCloud::Ptr PointCloudPtr;
 
   void setInputCloud( const PointCloudPtr &_cloud );
   void getBoundingBox(const PointCloudPtr &_cloud,

@@ -219,13 +219,13 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   }
 
   int g = minInd / mN;
-  std::cout << " Candidate with more overlapping (good) is: "<< minInd <<" from group "<<g<< std::endl;
+  //std::cout << " Candidate with more overlapping (good) is: "<< minInd <<" from group "<<g<< std::endl;
 
   int oldMinInd = minInd;
 
   minInd = oldMinInd; minVal = mDelta2[minInd];
   for( int i = oldMinInd; i < (g+1)*mN; ++i ) {
-    std::cout <<"[ "<<i<<"] D1: "<< mDelta1[i]<< " and D2: "<< mDelta2[i] << std::endl;
+    //std::cout <<"[ "<<i<<"] D1: "<< mDelta1[i]<< " and D2: "<< mDelta2[i] << std::endl;
     
     // If next in group has exceedingly more out-of-masks pixels, stop searching
     if( mDelta1[i] - mDelta1[oldMinInd] > 0.5 ) {
@@ -235,7 +235,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
     if( mDelta2[i] < minVal ) { minVal = mDelta2[i]; minInd = i; }
   }
   
-  std::cout << "Final  candidate with lowest front index is: "<< minInd << std::endl;
+  //std::cout << "Final  candidate with lowest front index is: "<< minInd << std::endl;
   _cloud = mCandidates[minInd];
 
   for( int i = 0; i < mCloud->points.size(); ++i ) {

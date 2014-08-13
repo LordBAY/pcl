@@ -17,6 +17,8 @@ struct levmar_data {
     int num;
 };
 
+double fx_SQ( double _p[], double x, double _y, double _z );
+double* jacx_SQ( double _p[], double x, double y, double z );
 
 double f_SQ( const double &a, const double &b, const double &c,
 	     const double &e1, const double &e2,
@@ -39,9 +41,7 @@ void jac_SQ( const SQ_parameters &_par,
 	     const double &_x, const double &_y, const double &_z,
 	     double _J[11] );
 
-void hess_SQ( const SQ_parameters &_par, 
-	      const double &_x, const double &_y, const double &_z,
-	      double _H[][11] );
+
 
 double error_SQ( const SQ_parameters &_par,  
 		 const double &_x, const double &_y, const double &_z ); 

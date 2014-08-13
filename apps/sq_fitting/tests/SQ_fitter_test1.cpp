@@ -67,10 +67,19 @@ int main( int argc, char* argv[] ) {
   double thresh = 0.1;
   int N = 5;
   std::cout << "\t * Call fitting function with voxel limits (: "<<smin<<","<<smax<<"), N: "<< N<<" and  thresh: "<< thresh << std::endl;
-  if( fitter.fit( minType, 
-				  smax, smin,
-				  N, thresh) ) {
 
+  bool r;
+  clock_t ts, tf; double dt;
+  ts = clock();
+  r = fitter.fit( minType, 
+				  smax, smin,
+				  N, thresh);
+  tf = clock();
+  dt = (double)(tf - ts) / CLOCKS_PER_SEC;
+  std::cout<<"Fitting done in : "<< dt << " seconds "<< std::endl;
+  if( r ) {
+
+	fitter.printResults();
 	std::cout << "\t [GOOD] Fit superquadric!"<< std::endl;
 
 	// 3. Visualize

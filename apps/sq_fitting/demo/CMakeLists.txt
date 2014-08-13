@@ -21,7 +21,7 @@ add_subdirectory( tabletop_symmetry )
 
 # Add demo files
 add_executable( demo demo.cpp )
-target_link_libraries( demo tabletop_segmentation mindGapper ${PCL_LIBRARIES} ${OpenCV_LIBS} )
+target_link_libraries( demo tabletop_segmentation mindGapper SQ_fitter ${PCL_LIBRARIES} ${OpenCV_LIBS} )
 
 set_target_properties( demo PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )

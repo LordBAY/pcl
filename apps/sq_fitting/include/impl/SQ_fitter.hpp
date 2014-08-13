@@ -23,7 +23,7 @@
  */
 template<typename PointT>
 SQ_fitter<PointT>::SQ_fitter() :
-  cloud_( new pcl::PointCloud<PointT>() ) {
+  cloud_( new PointCloud() ) {
 }
 
 /**
@@ -82,10 +82,12 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 
 
   /////////////////////////////////////////////
+  /*
   std::cout << "\t ****************************"<<std::endl;
   std::cout << "\t ITERATION 0 (init params): " << std::endl;
   std::cout<<"\t "; printParamsInfo(par_in_);
   std::cout << "\t * Error metric: "<< error_i << " cloud size: "<< cloud_->points.size() << std::endl;
+  */
   ////////////////////////////////////////////
 
 
@@ -95,7 +97,7 @@ bool SQ_fitter<PointT>::fit( const int &_type,
     par_i_1 = par_i;
     error_i_1 = error_i;
 
-    PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
+    PointCloudPtr cloud_i( new PointCloud() );
     downsample( cloud_,
 		s_i,
 		cloud_i );
@@ -107,15 +109,17 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 	      _type );
 
     ///////////////////////////////////////////////////////////
+    /*
     std::cout << "\t ITERATION "<<i+1<< std::endl;
     std::cout << "\t * Voxel size: "<< s_i << ", Downsampled cloud points: "<< cloud_i->points.size() << std::endl;
     std::cout << "\t "; printParamsInfo( par_i );
     std::cout << "\t Error metric: "<< error_i << std::endl;
+    */
     ///////////////////////////////////////////////////////////
     
     // [CONDITION]
     double de = (error_i_1 - error_i);
-    std::cout << "\t ** Diff of errors at iter "<<i<<": "<<de << std::endl;
+    //std::cout << "\t ** Diff of errors at iter "<<i<<": "<<de << std::endl;
     if(  de < thresh_ ) {
       std::cout << "\t DIFF OF ERRORS LESS THAN THRESH, OH HAPPY DAY! BREAK LOOP"<< std::endl;
       fitted = true;
@@ -193,7 +197,7 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
     std::cout << "\t [DEBUG] Bounding Box "<< std::endl;
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Debug Bounding Box") );
     viewer->addCoordinateSystem(_dim[2], 0);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> col(cloud_temp, 125,125,0);
+    pcl::visualization::PointCloudColorHandlerCustom<PointT> col(cloud_temp, 125,125,0);
     viewer->addPointCloud( cloud_temp, col, "Normalized cloud" );
     
     viewer->addCube( Eigen::Vector3f(0,0,0),
@@ -505,5 +509,25 @@ void SQ_fitter<PointT>::visualize() {
  */
 template<typename PointT>
 typename SQ_fitter<PointT>::PointCloudPtr SQ_fitter<PointT>::getSampledOutput() {
-  return  sampleSQ_uniform( par_out_ );
+
+  typename SQ_fitter<PointT>::PointCloudPtr pc( new typename SQ_fitter<PointT>::PointCloud );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr sampled( new pcl::PointCloud<pcl::PointXYZ>() );
+  
+  
+  sampled = sampleSQ_uniform( par_out_ );
+  for( int i = 0; i < sampled->points.size(); ++i ) {
+    pcl::PointXYZ pi;
+    pi = sampled->points[i];
+    PointT p;
+    p.x = pi.x;
+    p.y = pi.y;
+    p.z = pi.z;
+    pc->points.push_back( p );
+  }
+
+  pc->width = 1;
+  pc->height = pc->points.size();
+
+
+  return pc;
 }
